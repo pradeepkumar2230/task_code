@@ -29,23 +29,26 @@ def create_medication_request(
 ):
     """Create a new medication request for a patient"""
 
+    # Verify patient exists
     patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
 
+    # Verify clinician exists
     clinician = db.query(models.Clinician).filter(
         models.Clinician.id == request.clinician_id
     ).first()
     if not clinician:
         raise HTTPException(status_code=404, detail="Clinician not found")
 
+    # Verify medication exists
     medication = db.query(models.Medication).filter(
         models.Medication.id == request.medication_id
     ).first()
     if not medication:
         raise HTTPException(status_code=404, detail="Medication not found")
 
-
+    # Create medication request
     db_request = models.MedicationRequest(
         patient_id=patient_id,
         **request.dict()
@@ -69,14 +72,17 @@ def get_medication_requests(
 ):
     """Get medication requests for a patient with optional filtering"""
 
+    # Verify patient exists
     patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
 
+    # Build query
     query = db.query(models.MedicationRequest).filter(
         models.MedicationRequest.patient_id == patient_id
     )
 
+    # Apply filters
     if status:
         query = query.filter(models.MedicationRequest.status == status)
 
@@ -99,6 +105,7 @@ def update_medication_request(
 ):
     """Update specific fields of a medication request"""
 
+    # Find the medication request
     db_request = db.query(models.MedicationRequest).filter(
         models.MedicationRequest.id == request_id,
         models.MedicationRequest.patient_id == patient_id
@@ -106,6 +113,8 @@ def update_medication_request(
 
     if not db_request:
         raise HTTPException(status_code=404, detail="Medication request not found")
+
+    # Update only provided fields
     update_dict = update_data.dict(exclude_unset=True)
     for field, value in update_dict.items():
         setattr(db_request, field, value)
