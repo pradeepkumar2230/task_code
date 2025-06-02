@@ -44,3 +44,5 @@ dmypy.json
 .DS_Store
 .vscode/
 .idea/
+
+alembic
